@@ -1,0 +1,19 @@
+package bookmare;
+
+// Data structure representing an individual bookmark.
+message Bookmark {
+    // URL the bookmark refers to
+    required string url = 1;
+
+    // User who created the URL
+    required string owner = 2;
+
+    // Link title
+    optional string title = 3;
+
+    // Brief user definied description of the contents.
+    optional string description = 4;
+
+    // One link can have several tags for organizing.
+    repeated string tag = 5;
+};
