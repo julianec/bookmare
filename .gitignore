@@ -21,3 +21,9 @@ _testmain.go
 
 *.exe
 *.test
+
+bookmarks.crt
+bookmarks.der
+bookmarks.key
+*.pb.go
+cacert.pem
