@@ -1,0 +1,21 @@
+create keyspace bookmare with placement_strategy = 'org.apache.cassandra.locator.SimpleStrategy' and strategy_options = {replication_factor:1};
+use bookmare;
+create column family bookmark with key_validation_class = 'LexicalUUIDType' and comparator = 'AsciiType' and column_metadata = 
+    [
+        {
+            column_name : url,
+            validation_class : UTF8Type
+        },
+        {
+            column_name : owner,
+            validation_class : AsciiType
+        },
+        {
+            column_name : title,
+            validation_class : UTF8Type
+        },
+        {
+            column_name : description,
+            validation_class : UTF8Type
+        }
+    ];
