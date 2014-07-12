@@ -11,9 +11,12 @@ message Bookmark {
     // Link title
     optional string title = 3;
 
+    // Time at which the URL was first added to the database.
+    optional int64 timestamp = 4;
+
     // Brief user definied description of the contents.
-    optional string description = 4;
+    optional string description = 5;
 
     // One link can have several tags for organizing.
-    repeated string tag = 5;
+    repeated string tag = 6;
 };
