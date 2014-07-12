@@ -27,3 +27,5 @@ bookmarks.der
 bookmarks.key
 *.pb.go
 cacert.pem
+.*.swp
+bookmare-service/bookmare-service
