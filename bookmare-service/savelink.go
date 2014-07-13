@@ -18,6 +18,7 @@ func (s *SaveLink) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var user string = s.auth.GetAuthenticatedUser(req)
 	var bookmark *bookmare.Bookmark = new(bookmare.Bookmark)
         var err error
+        var link *url.URL
 
 	if user == "" {
 		rw.WriteHeader(http.StatusForbidden)
@@ -30,10 +31,21 @@ func (s *SaveLink) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	bookmark.Title = proto.String(req.FormValue("title"))
 	bookmark.Description = proto.String(req.FormValue("description"))
 
-        _, err = url.Parse(*bookmark.Url)
+        if *bookmark.Url == "" || *bookmark.Title == "" {
+                rw.WriteHeader(http.StatusBadRequest)
+                rw.Write([]byte("Empty URL or title."))
+                return
+        }
+
+        link, err = url.Parse(*bookmark.Url)
         if err != nil {
                 rw.WriteHeader(http.StatusBadRequest)
                 rw.Write([]byte(err.Error()))
+                return
+        }
+        if !link.IsAbs() || link.Host == "" {
+                rw.WriteHeader(http.StatusBadRequest)
+                rw.Write([]byte("Bookmark URL must be absolute."))
                 return
         }
 

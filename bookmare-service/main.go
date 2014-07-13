@@ -24,10 +24,12 @@ func (h *HelloServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 func main() {
         var app_name, cert_file, key_file, ca_bundle, authserver string
+        var dbserver, keyspace string
         var bind string
         var static_dir string
         var err error
         var auth *ancientauth.Authenticator
+        var bookmarkdb *BookmarkDB
 
         flag.StringVar(&bind, "bind", ":12345", "host:port pair to bind the http server to")
         flag.StringVar(&app_name, "app-name", "bookmare", "Application name to present to the authentication server")
@@ -36,6 +38,8 @@ func main() {
         flag.StringVar(&ca_bundle, "ca", "cacert.pem", "Path to the X.509 certificate authority")
         flag.StringVar(&authserver, "auth-server", "login.ancient-solutions.com", "Server for handling authentication")
         flag.StringVar(&static_dir, "static-dir", ".", "Directory to consider for serving static files")
+        flag.StringVar(&dbserver, "db-server", "localhost:9160", "Host:Port pair of the cassandra database server")
+        flag.StringVar(&keyspace, "db-keyspace", "bookmare", "Name of database keyspace")
         flag.Parse()
 
         auth, err = ancientauth.NewAuthenticator(app_name, cert_file, key_file, ca_bundle, authserver)
@@ -43,10 +47,19 @@ func main() {
                 log.Fatal("Error setting up authenticator: ", err)
         }
 
-        http.Handle("/", &HelloServer{auth:auth,})
+        bookmarkdb, err = NewBookmarkDB(dbserver, keyspace)
+        if err != nil {
+                log.Fatal("Error connecting to database: ", err)
+        }
+
+        http.Handle("/", &HelloServer{auth: auth,})
         http.Handle("/css/", http.FileServer(http.Dir(static_dir)))
         http.Handle("/js/", http.FileServer(http.Dir(static_dir)))
         http.Handle("/fonts/", http.FileServer(http.Dir(static_dir)))
+        http.Handle("/api/savelink", &SaveLink{
+                auth: auth,
+                db:   bookmarkdb,
+        })
 
 
         err = http.ListenAndServe(bind, nil)
