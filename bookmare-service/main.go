@@ -25,6 +25,7 @@ func (h *HelloServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func main() {
         var app_name, cert_file, key_file, ca_bundle, authserver string
         var bind string
+        var static_dir string
         var err error
         var auth *ancientauth.Authenticator
 
@@ -34,13 +35,20 @@ func main() {
         flag.StringVar(&key_file, "key", "bookmarks.der", "Path to the X.509 application private key")
         flag.StringVar(&ca_bundle, "ca", "cacert.pem", "Path to the X.509 certificate authority")
         flag.StringVar(&authserver, "auth-server", "login.ancient-solutions.com", "Server for handling authentication")
+        flag.StringVar(&static_dir, "static-dir", ".", "Directory to consider for serving static files")
         flag.Parse()
 
         auth, err = ancientauth.NewAuthenticator(app_name, cert_file, key_file, ca_bundle, authserver)
         if err != nil {
                 log.Fatal("Error setting up authenticator: ", err)
         }
+
         http.Handle("/", &HelloServer{auth:auth,})
+        http.Handle("/css/", http.FileServer(http.Dir(static_dir)))
+        http.Handle("/js/", http.FileServer(http.Dir(static_dir)))
+        http.Handle("/fonts/", http.FileServer(http.Dir(static_dir)))
+
+
         err = http.ListenAndServe(bind, nil)
         if err != nil {
                 log.Fatal("ListenAndServe: ", err)
