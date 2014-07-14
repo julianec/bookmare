@@ -1,25 +1,24 @@
 package main
 
 import (
-        "io"
         "net/http"
         "log"
         "flag"
         "ancient-solutions.com/ancientauth"
 )
 
-type HelloServer struct {
+type BookmarkSite struct {
     auth *ancientauth.Authenticator
+    static_dir string
 }
 
-// hello world, the web server
-func (h *HelloServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (h *BookmarkSite) ServeHTTP(w http.ResponseWriter, req *http.Request) {
         var user string = h.auth.GetAuthenticatedUser(req)
         if user == "" {
             h.auth.RequestAuthorization(w, req)
             return
         }
-        io.WriteString(w, "hello, "+user+"!\n")
+        http.ServeFile(w, req, h.static_dir+"/static/static.html")
 }
 
 func main() {
@@ -52,7 +51,7 @@ func main() {
                 log.Fatal("Error connecting to database: ", err)
         }
 
-        http.Handle("/", &HelloServer{auth: auth,})
+        http.Handle("/", &BookmarkSite{auth: auth, static_dir: static_dir,})
         http.Handle("/css/", http.FileServer(http.Dir(static_dir)))
         http.Handle("/js/", http.FileServer(http.Dir(static_dir)))
         http.Handle("/fonts/", http.FileServer(http.Dir(static_dir)))
